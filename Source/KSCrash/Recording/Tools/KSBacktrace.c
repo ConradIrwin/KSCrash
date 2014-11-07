@@ -38,6 +38,14 @@
  */
 #define DETAG_FRAME_CALLER_ADDRESS(A) ((A) & ~(sizeof(uintptr_t)*2-1))
 
+/** Step backwards by one instruction.
+ * The backtrace of an objective-C program is expected to contain return
+ * addresses not call instructions, as that is what can easily be read from
+ * the stack. This is not a problem except for a few cases where the return
+ * address is inside a different symbol than the call address.
+ */
+#define CALL_INSTRUCTION_FROM_RETURN_ADDRESS(A) (DETAG_FRAME_CALLER_ADDRESS((A)) - 1)
+
 /** Represents an entry in a frame list.
  * This is modeled after the various i386/x64 frame walkers in the xnu source,
  * and seems to work fine in ARM as well. I haven't included the args pointer
@@ -214,6 +222,6 @@ void ksbt_symbolicate(const uintptr_t* const backtraceBuffer,
 {
     for(int i = 0; i < numEntries; i++)
     {
-        ksdl_dladdr(backtraceBuffer[i], &symbolsBuffer[i]);
+        ksdl_dladdr(CALL_INSTRUCTION_FROM_RETURN_ADDRESS(backtraceBuffer[i]), &symbolsBuffer[i]);
     }
 }
