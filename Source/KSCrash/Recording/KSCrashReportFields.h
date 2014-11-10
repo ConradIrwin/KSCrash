@@ -139,6 +139,7 @@
 #define KSCrashField_Signal                "signal"
 #define KSCrashField_Subcode               "subcode"
 #define KSCrashField_UserReported          "user_reported"
+#define KSCrashField_LinkRegister          "link_register"
 
 
 #pragma mark - Process State -

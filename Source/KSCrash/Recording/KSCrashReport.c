@@ -1413,6 +1413,24 @@ void kscrw_i_writeNotableAddresses(const KSCrashReportWriter* const writer,
     writer->endContainer(writer);
 }
 
+void kscrw_i_writeLinkRegister(const KSCrashReportWriter* const writer,
+                               const char* const key,
+                               const STRUCT_MCONTEXT_L* const machineContext)
+{
+    uintptr_t linkRegister = ksmach_linkRegister(machineContext);
+    if (linkRegister) {
+        Dl_info symbolicated;
+
+        ksbt_symbolicate(&linkRegister, &symbolicated, 1);
+
+        kscrw_i_writeBacktraceEntry(writer,
+                                    key,
+                                    linkRegister,
+                                    &symbolicated);
+
+    }
+}
+
 /** Write information about a thread to the report.
  *
  * @param writer The writer.
@@ -1470,6 +1488,11 @@ void kscrw_i_writeThread(const KSCrashReportWriter* const writer,
                                    KSCrashField_Registers,
                                    machineContext,
                                    isCrashedThread);
+            if (isCrashedThread) {
+                kscrw_i_writeLinkRegister(writer,
+                                          KSCrashField_LinkRegister,
+                                          machineContext);
+            }
         }
         writer->addIntegerElement(writer, KSCrashField_Index, index);
         if(searchThreadNames)
